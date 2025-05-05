@@ -10,14 +10,16 @@ public class GridPanel extends JPanel {
     private boolean[][] obstacles;
     private List<Node> path;
     private Node start, goal;
+    private List<Node> placesDisponibles;
 
-    public GridPanel(int rows, int cols, boolean[][] obstacles, List<Node> path, Node start, Node goal) {
+    public GridPanel(int rows, int cols, boolean[][] obstacles, List<Node> path, Node start, Node goal, List<Node> placesDisponibles) {
         this.rows = rows;
         this.cols = cols;
         this.obstacles = obstacles;
         this.path = path;
         this.start = start;
         this.goal = goal;
+        this.placesDisponibles = placesDisponibles;
         setPreferredSize(new Dimension(cols * cellSize, rows * cellSize));
     }
 
@@ -56,5 +58,20 @@ public class GridPanel extends JPanel {
         // Destination
         g.setColor(Color.RED);
         g.fillRect(goal.x * cellSize, goal.y * cellSize, cellSize, cellSize);
+        
+     // Places disponibles (autres que goal)
+        if (placesDisponibles != null) {
+            for (Node place : placesDisponibles) {
+                if (!place.equals(goal)) {
+                    g.setColor(Color.ORANGE);
+                    g.fillRect(place.x * cellSize, place.y * cellSize, cellSize, cellSize);
+                    g.setColor(Color.GRAY);
+                    g.drawRect(place.x * cellSize, place.y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+    }
+    public void setStart(Node newStart) {
+        this.start = newStart;
     }
 }
