@@ -1,18 +1,17 @@
-package robotbruillon;
+package robot2;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
 public class GridPanel extends JPanel {
-    private final int cellSize = 50;
-    private final int rows, cols;
+    private int rows, cols, cellSize = 40;
     private boolean[][] obstacles;
     private List<Node> path;
-    private Node start, goal;
+    private Node start, goal, startFixed;
     private List<Node> placesDisponibles;
 
-    public GridPanel(int rows, int cols, boolean[][] obstacles, List<Node> path, Node start, Node goal, List<Node> placesDisponibles) {
+    public GridPanel(int rows, int cols, boolean[][] obstacles, List<Node> path, Node start, Node goal, List<Node> placesDisponibles, Node startFixed) {
         this.rows = rows;
         this.cols = cols;
         this.obstacles = obstacles;
@@ -20,8 +19,23 @@ public class GridPanel extends JPanel {
         this.start = start;
         this.goal = goal;
         this.placesDisponibles = placesDisponibles;
+        this.startFixed = startFixed;
         setPreferredSize(new Dimension(cols * cellSize, rows * cellSize));
     }
+
+    public void setStart(Node newStart) {
+        this.start = newStart;
+    }
+
+    public void setPath(List<Node> newPath) {
+        this.path = newPath;
+    }
+
+    public void setGoal(Node newGoal) {
+        this.goal = newGoal;
+    }
+    
+    
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -29,37 +43,27 @@ public class GridPanel extends JPanel {
 
         for (int y = 0; y < rows; y++) {
             for (int x = 0; x < cols; x++) {
-                if (obstacles[y][x]) {
-                    g.setColor(Color.BLACK);
-                } else {
-                    g.setColor(Color.WHITE);
-                }
-
+                g.setColor(Color.WHITE);
                 g.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
                 g.setColor(Color.GRAY);
                 g.drawRect(x * cellSize, y * cellSize, cellSize, cellSize);
+
+                if (obstacles[y][x]) {
+                    g.setColor(Color.BLACK);
+                    g.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
             }
         }
 
-        // Chemin
         if (path != null) {
             for (Node node : path) {
-                g.setColor(Color.CYAN);
+                g.setColor(new Color(173, 216, 230));
                 g.fillRect(node.x * cellSize, node.y * cellSize, cellSize, cellSize);
                 g.setColor(Color.GRAY);
                 g.drawRect(node.x * cellSize, node.y * cellSize, cellSize, cellSize);
             }
         }
 
-        // Départ
-        g.setColor(Color.GREEN);
-        g.fillRect(start.x * cellSize, start.y * cellSize, cellSize, cellSize);
-
-        // Destination
-        g.setColor(Color.RED);
-        g.fillRect(goal.x * cellSize, goal.y * cellSize, cellSize, cellSize);
-        
-     // Places disponibles (autres que goal)
         if (placesDisponibles != null) {
             for (Node place : placesDisponibles) {
                 if (!place.equals(goal)) {
@@ -70,8 +74,37 @@ public class GridPanel extends JPanel {
                 }
             }
         }
-    }
-    public void setStart(Node newStart) {
-        this.start = newStart;
+
+        if (goal != null) {
+            g.setColor(Color.RED);
+            g.fillRect(goal.x * cellSize, goal.y * cellSize, cellSize, cellSize);
+        }
+
+        if (startFixed != null) {
+            g.setColor(Color.GREEN);
+            g.fillRect(startFixed.x * cellSize, startFixed.y * cellSize, cellSize, cellSize);
+            g.setColor(Color.GRAY);
+            g.drawRect(startFixed.x * cellSize, startFixed.y * cellSize, cellSize, cellSize);
+        }
+
+        if (start != null && !start.equals(goal)) {
+            g.setColor(new Color(0, 0, 128));
+            g.fillOval(start.x * cellSize + 10, start.y * cellSize + 10, cellSize - 20, cellSize - 20);
+        }
+        
+        if (placesDisponibles != null) {
+            for (Node node : placesDisponibles) {
+                if (!obstacles[node.y][node.x]) {
+                    if (node.disponibilite) {
+                        g.setColor(Color.GREEN); // Disponible
+                    } else {
+                        g.setColor(Color.RED); // Occupée
+                    }
+                    g.fillRect(node.x * cellSize, node.y * cellSize, cellSize, cellSize);
+                    g.setColor(Color.GRAY);
+                    g.drawRect(node.x * cellSize, node.y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
     }
 }
