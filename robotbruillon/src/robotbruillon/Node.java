@@ -1,4 +1,4 @@
-package robot2;
+package robotbruillon;
 
 public class Node {
     public int x, y, cost;
