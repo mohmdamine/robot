@@ -1,4 +1,4 @@
-package robot2;
+package robotbruillon;
 
 import javax.swing.*;
 import java.awt.*;
