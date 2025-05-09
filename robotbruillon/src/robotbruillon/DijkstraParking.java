@@ -3,18 +3,17 @@ package robotbruillon;
 import javax.swing.*;
 import java.util.*;
 import javax.swing.Timer;
-
-
-
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.FileNotFoundException;
 
 
 public class DijkstraParking {
     static final int WIDTH = 30, HEIGHT = 13;
     static boolean[][] obstacles = new boolean[HEIGHT][WIDTH];
-    
+    static List<Node> placesDisponibles;
 
     public static void main(String[] args) {
         // Exemple d'obstacles
@@ -73,15 +72,6 @@ public class DijkstraParking {
     	obstacles[6][25] = true;
     	obstacles[6][26] = true;
     	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
-    	obstacles[6][3] = true;
     	obstacles[7][3] = true;
     	obstacles[8][3] = true;
     	obstacles[3][26] = true;
@@ -124,6 +114,7 @@ public class DijkstraParking {
     	
     	
     	
+    	
     	 List<Node> placesDisponibles = List.of(
     	            new Node(1, 0, 0), new Node(2, 0, 0), new Node(3, 0, 0), new Node(4, 0, 0), new Node(5, 0, 0), new Node(6, 0, 0), new Node(7, 0, 0), 
     	            new Node(8, 0, 0), new Node(9, 0, 0), new Node(10, 0, 0), new Node(11, 0, 0),
@@ -144,8 +135,11 @@ public class DijkstraParking {
     	            , new Node(11, 11, 0), new Node(12, 11, 0), new Node(13, 11, 0), new Node(14, 11, 0), new Node(15, 11, 0), new Node(16, 11, 0), new Node(17, 11, 0)
     	            , new Node(18, 11, 0), new Node(19, 11, 0), new Node(20, 11, 0), new Node(21, 11, 0), new Node(22, 11, 0), new Node(23, 11, 0), new Node(24, 11, 0)
     	    
-    	        );
-
+    	        ); 
+    	
+    	
+    	
+    	
         SwingUtilities.invokeLater(() -> {
             JFrame frame = new JFrame("Robot Parking - Dijkstra");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -167,13 +161,15 @@ public class DijkstraParking {
             frame.setVisible(true);
         });
     }
+    
+
 
     public static Node trouverPlaceLaPlusProche(Node start, List<Node> places) {
         Node meilleure = null;
         int meilleurCout = Integer.MAX_VALUE;
         for (Node goal : places) {
         	if (goal.disponibilite) {
-        		List<Node> chemin = dijkstra(start, goal);
+        		List<Node> chemin = dijkstra(start, goal, places);
         		if (!chemin.isEmpty() && chemin.size() < meilleurCout) {
         			meilleurCout = chemin.size();
         			meilleure = goal;
@@ -185,13 +181,16 @@ public class DijkstraParking {
         }
         if (meilleure != null) {
             meilleure.disponibilite = false;
+            //meilleure.matricule= champs.getText();
         }
         return meilleure;
     }
-
+    
+    
+    
     public static void executerDijkstraAvecAnimation(Node startNode, List<Node> places, boolean[][] obstacles, GridPanel panel) {
         Node goal = trouverPlaceLaPlusProche(startNode, places);
-        List<Node> path = dijkstra(startNode, goal);
+        List<Node> path = dijkstra(startNode, goal, places);
         Node[] robotPosition = { new Node(startNode.x, startNode.y, 0) };
 
         panel.setGoal(goal);
@@ -199,7 +198,7 @@ public class DijkstraParking {
         panel.setStart(robotPosition[0]);
         panel.repaint();
 
-        Timer timer = new Timer(500, null);
+        Timer timer = new Timer(100, null);
         ActionListener listener = new ActionListener() {
             int index = 0;
 
@@ -221,8 +220,15 @@ public class DijkstraParking {
         timer.addActionListener(listener);
         timer.start();
     }
+    
+    public static boolean estUnePlaceDeParking(int x, int y, List<Node> placesDisponibles) {
+        for (Node p : placesDisponibles) {
+            if (p.x == x && p.y == y) return true;
+        }
+        return false;
+    }
 
-    public static List<Node> dijkstra(Node start, Node goal) {
+    public static List<Node> dijkstra(Node start, Node goal, List<Node> placesDisponibles) {
         int rows = obstacles.length;
         int cols = obstacles[0].length;
         int[][] distances = new int[rows][cols];
@@ -244,7 +250,10 @@ public class DijkstraParking {
 
             for (int[] d : dirs) {
                 int nx = current.x + d[0], ny = current.y + d[1];
-                if (nx >= 0 && ny >= 0 && nx < cols && ny < rows && !obstacles[ny][nx]) {
+                if (nx >= 0 && ny >= 0 && nx < cols && ny < rows 
+                    && !obstacles[ny][nx] 
+                    && (!estUnePlaceDeParking(nx, ny, placesDisponibles) || (nx == goal.x && ny == goal.y))) {
+                    
                     int newDist = distances[current.y][current.x] + 1;
                     if (newDist < distances[ny][nx]) {
                         distances[ny][nx] = newDist;
@@ -272,4 +281,6 @@ public class DijkstraParking {
         else if (dy == 1) System.out.println("Instruction : Aller en BAS");
         else if (dy == -1) System.out.println("Instruction : Aller en HAUT");
     }
+    
+      
 }
